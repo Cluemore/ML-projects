@@ -2,6 +2,8 @@ import streamlit as st
 import pickle
 import pandas as pd
 import base64
+import os
+import gdown
 
 st.set_page_config(
     page_title="Movie Recommender",
@@ -9,10 +11,40 @@ st.set_page_config(
     layout="wide"
 )
 
-movies_dict = pickle.load(open("moviesdict.pkl", "rb"))
+# -----------------------------
+# Base directory
+# -----------------------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# -----------------------------
+# Download similarity.pkl if missing
+# -----------------------------
+FILE_ID = "1q3BKpQxn4WfJflimi0arLRg3S9KrF-js"
+
+similarity_path = os.path.join(BASE_DIR, "similarity.pkl")
+
+if not os.path.exists(similarity_path):
+    gdown.download(
+        id=FILE_ID,
+        output=similarity_path,
+        quiet=False
+    )
+
+# -----------------------------
+# Load movies dictionary
+# -----------------------------
+movies_dict_path = os.path.join(BASE_DIR, "moviesdict.pkl")
+
+with open(movies_dict_path, "rb") as f:
+    movies_dict = pickle.load(f)
+
 movies = pd.DataFrame(movies_dict)
 
-similarity = pickle.load(open("../../similarity.pkl", "rb"))
+# -----------------------------
+# Load similarity matrix
+# -----------------------------
+with open(similarity_path, "rb") as f:
+    similarity = pickle.load(f)
 
 # RECOMMENDATION FUNCTION
 
@@ -39,7 +71,7 @@ def get_base64(file):
     with open(file, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
-banner = get_base64("banner.jpg")
+banner = get_base64(os.path.join(BASE_DIR, "banner.jpg"))
 
 st.markdown(f"""
 <style>
@@ -197,21 +229,3 @@ if st.button("Recommend Movies"):
                 st.markdown(card, unsafe_allow_html=True)
 
 st.divider()
-
-import os
-import pickle
-import gdown
-
-FILE_ID = "1q3BKpQxn4WfJflimi0arLRg3S9KrF-js"
-
-# Download the similarity matrix only if it doesn't already exist
-if not os.path.exists("similarity.pkl"):
-    gdown.download(
-        id=FILE_ID,
-        output="similarity.pkl",
-        quiet=False
-    )
-
-# Load the similarity matrix
-with open("similarity.pkl", "rb") as f:
-    similarity = pickle.load(f)
