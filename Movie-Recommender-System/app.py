@@ -199,14 +199,19 @@ if st.button("Recommend Movies"):
 st.divider()
 
 import os
+import pickle
 import gdown
 
 FILE_ID = "1q3BKpQxn4WfJflimi0arLRg3S9KrF-js"
 
-if not os.path.exists("../../similarity.pkl"):
+# Download the similarity matrix only if it doesn't already exist
+if not os.path.exists("similarity.pkl"):
     gdown.download(
         id=FILE_ID,
         output="similarity.pkl",
         quiet=False
     )
-similarity = pickle.load(open("../../similarity.pkl", "rb"))
+
+# Load the similarity matrix
+with open("similarity.pkl", "rb") as f:
+    similarity = pickle.load(f)
